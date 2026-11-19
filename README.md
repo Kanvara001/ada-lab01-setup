@@ -148,3 +148,89 @@ deactivate
 | `git remote add origin <url>` | เชื่อม repository ในเครื่องกับ repository บน GitHub |
 | `git push -u origin main` | ส่ง commit ขึ้น GitHub และตั้ง `origin/main` เป็น upstream |
 | `git pull` | ดึงการเปลี่ยนแปลงล่าสุดจาก GitHub มารวมกับงานในเครื่อง |
+
+### 4.1 ความแตกต่างระหว่าง `git init` กับ `git clone`
+
+| หัวข้อ | `git init` | `git clone <url>` |
+|---|---|---|
+| หน้าที่ | สร้าง Git repository ใหม่ในโฟลเดอร์ปัจจุบัน | ดาวน์โหลด repository ที่มีอยู่แล้วบน GitHub พร้อมประวัติทั้งหมด |
+| จุดเริ่มต้น | โฟลเดอร์ในเครื่องที่ยังไม่มี repo บน GitHub | repo ที่มีอยู่แล้วบน GitHub |
+| ผลลัพธ์ | มีโฟลเดอร์ `.git` ในโฟลเดอร์ปัจจุบัน ยังไม่มี remote | สร้างโฟลเดอร์ใหม่ที่มีไฟล์และประวัติ พร้อม remote ชื่อ `origin` ให้อัตโนมัติ |
+| ขั้นตอนต่อไป | สร้าง repo บน GitHub แล้วรัน `git remote add origin <url>` ตามด้วย `git push -u origin main` | แก้ไขไฟล์ แล้ว `git add`, `git commit` และ `git push` ได้เลย |
+
+**สรุป:** ถ้าเริ่มจากโฟลเดอร์ในเครื่องให้ใช้ `git init` ถ้า repo อยู่บน GitHub แล้วให้ใช้ `git clone`
+
+### 4.2 การ Clone และการบันทึกงานขึ้น GitHub
+
+**Clone repository ลงเครื่อง** (ทำครั้งเดียวต่อเครื่อง)
+
+```bash
+git clone <repository_url>
+```
+
+**ขั้นตอนเมื่อมีการแก้ไขไฟล์**
+
+1. ดึงเวอร์ชันล่าสุดจาก GitHub ก่อนเริ่มงาน
+
+   ```bash
+   git pull
+   ```
+
+2. เลือกไฟล์ที่ต้องการบันทึกเข้า staging area
+
+   ```bash
+   git add <file_name>    # เลือกไฟล์เฉพาะ
+   git add .              # เลือกทุกไฟล์ที่เปลี่ยน
+   ```
+
+3. บันทึกการเปลี่ยนแปลงเป็น commit
+
+   ```bash
+   git commit -m "ข้อความอธิบายการเปลี่ยนแปลง"
+   ```
+
+4. ส่ง commit ขึ้น GitHub
+
+   ```bash
+   git push
+   ```
+
+ลำดับคำสั่งที่ต้องจำ: **pull → add → commit → push**
+
+**ตรวจสถานะไฟล์**
+
+```bash
+git status
+```
+
+| ข้อความใน `git status` | ความหมาย |
+|---|---|
+| Untracked files | ไฟล์ใหม่ที่ Git ยังไม่ได้ติดตาม ต้อง `git add` ก่อน |
+| Changes not staged for commit | ไฟล์ที่แก้ไขแล้วแต่ยังไม่ได้ add |
+| Changes to be committed | ไฟล์ที่อยู่ใน staging area รอ commit |
+| nothing to commit, working tree clean | ทุกอย่าง commit และ push แล้ว ไม่มีอะไรค้าง |
+
+### 4.3 ไฟล์ `.gitignore`
+
+ไฟล์ `.gitignore` บอก Git ว่าไฟล์หรือโฟลเดอร์ใดไม่ต้องติดตามและไม่ต้องอัปโหลดขึ้น GitHub ใช้เพื่อป้องกันไฟล์ที่ใหญ่หรือผูกกับเครื่องของเราโดยเฉพาะ เช่น โฟลเดอร์ `.venv` ซึ่งทุกคนสร้างเองในเครื่องได้
+
+เนื้อหาในโปรเจกต์นี้แบ่งเป็นกลุ่มดังนี้
+
+| กลุ่ม | รูปแบบที่ใส่ | ความหมาย |
+|---|---|---|
+| Python Virtual Environment | `.venv/`, `venv/`, `env/` | ไม่อัปโหลดโฟลเดอร์ venv |
+| Python Bytecode และ Cache | `__pycache__/`, `*.py[cod]` | ไม่อัปโหลดไฟล์แคชที่ Python สร้างขึ้นเมื่อรันโปรแกรม |
+| Jupyter Notebook Checkpoints | `.ipynb_checkpoints/` | ไม่อัปโหลดไฟล์สำรองอัตโนมัติของ Jupyter |
+| OS Specific files | `.DS_Store`, `Thumbs.db` | ไม่อัปโหลดไฟล์ที่ระบบปฏิบัติการสร้างขึ้นเอง |
+
+เครื่องหมาย `/` ท้ายชื่อหมายถึงโฟลเดอร์ ส่วน `*` หมายถึงทุกชื่อที่ตรงรูปแบบ
+
+ตรวจว่า `.gitignore` ทำงานถูกต้องด้วยคำสั่ง
+
+```bash
+git status
+```
+
+ถ้าโฟลเดอร์ `.venv` ไม่ปรากฏในรายการ แสดงว่า `.gitignore` ทำงานแล้ว
+
+> หมายเหตุ: `.gitignore` มีผลกับไฟล์ที่ยังไม่เคย commit เท่านั้น ถ้าไฟล์ถูก commit ไปแล้ว ต้องนำออกจากการติดตามด้วย `git rm -r --cached <ชื่อไฟล์หรือโฟลเดอร์>` แล้ว commit ใหม่
